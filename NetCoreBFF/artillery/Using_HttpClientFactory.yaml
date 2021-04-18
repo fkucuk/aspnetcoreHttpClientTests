@@ -1,0 +1,21 @@
+config:
+  target: https://localhost:44371
+  phases:
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "Warm up the application"
+    - duration: 600
+      arrivalRate: 50
+      name: "Sustained max load"
+  http:
+    # Responses have to be sent within 5 seconds or the request will be aborted
+    timeout: 60
+scenarios:
+  - flow:
+      - post:
+          url: "/mobile/weather"
+          headers:
+            Content-Type: application/json
+          json:
+            City: "TR"

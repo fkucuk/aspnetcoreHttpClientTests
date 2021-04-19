@@ -1,0 +1,28 @@
+﻿{
+  "ProviderId": "Microsoft.VisualStudio.ConnectedService.Wcf",
+  "Version": "15.0.40203.910",
+  "ExtendedData": {
+    "inputs": [
+      "http://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, MobileWCFService"
+    ],
+    "references": [
+      "Microsoft.AspNetCore.JsonPatch, {Microsoft.AspNetCore.JsonPatch, 3.1.14}",
+      "Microsoft.AspNetCore.Mvc.NewtonsoftJson, {Microsoft.AspNetCore.Mvc.NewtonsoftJson, 3.1.14}",
+      "Microsoft.Extensions.DependencyInjection, {Microsoft.Extensions.DependencyInjection, 5.0.1}",
+      "Microsoft.Extensions.DependencyInjection.Abstractions, {Microsoft.Extensions.DependencyInjection.Abstractions, 5.0.0}",
+      "Newtonsoft.Json, {Newtonsoft.Json, 13.0.1}",
+      "Newtonsoft.Json.Bson, {Newtonsoft.Json.Bson, 1.0.2}",
+      "RestSharp, {RestSharp, 106.3.1}"
+    ],
+    "sync": true,
+    "targetFramework": "netcoreapp3.1",
+    "typeReuseMode": "All"
+  }
+}

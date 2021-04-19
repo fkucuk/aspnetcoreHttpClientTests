@@ -15,16 +15,13 @@ namespace NetFramework4_6BFF.Controllers
         }
         
         
-        public IHttpActionResult Post([FromBody]object request)
+        public IHttpActionResult Post([FromBody]object requestObj)
         {
-            object response = CallInternalService(request, "weather");
-            return Content(HttpStatusCode.OK, response);
-        }
+            //object response = CallInternalService(request, "weather");
 
-        private object CallInternalService(object requestObj, string endpoint)
-        {
+
             var client = new RestClient(oldServiceUrl);
-            var request = new RestRequest(endpoint, Method.POST);
+            var request = new RestRequest("getlabelinfo", Method.POST);
             request.AddHeader("Content-Type", "application/json");
 
             string body = JsonConvert.SerializeObject(requestObj);
@@ -34,8 +31,15 @@ namespace NetFramework4_6BFF.Controllers
 
             IRestResponse response = client.Execute(request);
 
-            var unserializedContent = JsonConvert.DeserializeObject(response.Content.ToString());
-            return unserializedContent;
+            if (response.IsSuccessful)
+            {
+                return Content(HttpStatusCode.OK, JsonConvert.DeserializeObject(response.Content.ToString())); 
+
+            }
+
+            return Content(HttpStatusCode.BadRequest, "hata");
         }
+
+      
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using MobileWCFService;
 using NetCoreBFF.Services;
 using Newtonsoft.Json;
 using RestSharp;
 using System.Net;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace NetCoreBFF.Controllers
@@ -16,12 +17,15 @@ namespace NetCoreBFF.Controllers
         private readonly IOldService _oldService;
         private readonly IConfiguration _configuration;
 
+        private static readonly IJsonRestDataService channel =
+            new ChannelFactory<MobileWCFService.IJsonRestDataService>(new BasicHttpBinding(), new EndpointAddress("https://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc/wcf")).CreateChannel();
+
         public MobileController(IOldService oldService, IConfiguration configuration)
         {
             _oldService = oldService;
             _configuration = configuration;
         }
-        [HttpPost, Route("weather")]
+        [HttpPost, Route("getlabelinfo")]
         public async Task<IActionResult> GetWeather(object request)
         {
             var response = await _oldService.CallOldServiceAsync(request, "weather");
@@ -37,29 +41,23 @@ namespace NetCoreBFF.Controllers
         }
 
 
-        [HttpPost, Route("v2/weather")]
-        public  IActionResult GetWeather_v2(object request)
+        [HttpPost, Route("v2/getlabelinfo")]
+        public IActionResult GetWeather_v2(object request)
         {
-            WebClient client = new WebClient();
-
+            using var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
-
-            BinaryFormatter bf = new BinaryFormatter();
             var postData = JsonConvert.SerializeObject(request);
-
             var response = client.UploadString($"{_configuration["LegacyServiceUrl"]}/weather", postData);
-
-            
 
             return Ok(response);
         }
 
 
-        [HttpPost, Route("v3/weather")]
+        [HttpPost, Route("v3/getlabelinfo")]
         public IActionResult GetWeather_v3(object requestObj)
         {
             var client = new RestClient(_configuration["LegacyServiceUrl"]);
-            var request = new RestRequest("weather", Method.POST);
+            var request = new RestRequest("getlabelinfo", Method.POST);
             request.AddHeader("Content-Type", "application/json");
 
             string body = JsonConvert.SerializeObject(requestObj);
@@ -69,14 +67,21 @@ namespace NetCoreBFF.Controllers
 
             IRestResponse response = client.Execute(request);
 
-            var unserializedContent = JsonConvert.DeserializeObject(response.Content.ToString());
-            return Ok(unserializedContent);
+
+            if (response.IsSuccessful)
+            {
+                var unserializedContent = JsonConvert.DeserializeObject(response.Content.ToString());
+                return Ok(unserializedContent);
+            }
+
+            return StatusCode((int)response.StatusCode, "The server encountered an error processing the request.");
+
         }
 
-        [HttpPost, Route("v4/weather")]
+        [HttpPost, Route("v4/getlabelinfo")]
         public IActionResult GetWeather_v4(object request)
         {
-            var response = _oldService.CallOldService(request, "weather");
+            var response = _oldService.CallOldService(request, "getlabelinfo");
 
             if (response.IsSuccessStatusCode)
             {
@@ -88,7 +93,7 @@ namespace NetCoreBFF.Controllers
             return StatusCode((int)response.StatusCode);
         }
 
-        [HttpPost, Route("v5/weather")]
+        [HttpPost, Route("v5/getlabelinfo")]
         public IActionResult GetWeather_v5(object request)
         {
             var postData = JsonConvert.SerializeObject(request);
@@ -97,7 +102,24 @@ namespace NetCoreBFF.Controllers
             return Ok(response);
         }
 
-        public static string GetDataFromWebClient(string url ,string data)
+
+        [HttpPost, Route("v6/getlabelinfo")]
+        public IActionResult GetWeather_v6(GetLabelInfoRequest request)
+        {
+            
+            //var channel = _channelFactory.CreateChannel();
+
+            try
+            {
+                var result = channel.GetLabelInfo(request);
+                return Ok(result);
+            }
+            catch { return BadRequest(); }
+        }
+
+        
+
+        public static string GetDataFromWebClient(string url, string data)
         {
             using (var webClient = new WebClient())
             {

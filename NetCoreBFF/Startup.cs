@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetCoreBFF.Services;
 using Newtonsoft.Json.Serialization;
-
+using System.Net.Http;
 
 namespace NetCoreBFF
 {
@@ -23,8 +23,13 @@ namespace NetCoreBFF
         {
             services.AddHttpClient();
             services.AddScoped<IOldService2, OldService2>();
-
+            services.AddHttpClient<ICoreService, CoreService>();
             services.AddHttpClient<IOldService, OldService>();
+            services.AddHttpClient<HttpClient>("WinHttp")
+        .ConfigureHttpMessageHandlerBuilder(c =>
+        {
+            c.PrimaryHandler = new WinHttpHandler();
+        });
 
             services.AddControllers().AddNewtonsoftJson(options =>
             {

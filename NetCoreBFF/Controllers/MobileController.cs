@@ -16,14 +16,16 @@ namespace NetCoreBFF.Controllers
     [Route("[controller]")]
     public class MobileController : ControllerBase
     {
+        private readonly ICoreService _coreService;
         private readonly IOldService _oldService;
         private readonly IConfiguration _configuration;
 
         private static readonly IJsonRestDataService channel =
             new ChannelFactory<MobileWCFService.IJsonRestDataService>(new BasicHttpBinding(), new EndpointAddress("https://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc/wcf")).CreateChannel();
 
-        public MobileController(IOldService oldService, IConfiguration configuration)
+        public MobileController(IOldService oldService,ICoreService coreService, IConfiguration configuration)
         {
+            _coreService = coreService;
             _oldService = oldService;
             _configuration = configuration;
         }
@@ -117,5 +119,24 @@ namespace NetCoreBFF.Controllers
             }
             catch { return BadRequest(); }
         }
+
+
+
+        [HttpPost, Route("coreclient")]
+        public async Task<IActionResult> coreclient(object requestObj, string endpoint)
+        {
+            var response = await _coreService.CallOldServiceAsync(requestObj, "getlabelinfo");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject(content);
+                return Ok(result);
+            }
+
+            return StatusCode((int)response.StatusCode);
+
+        }
+
     }
 }

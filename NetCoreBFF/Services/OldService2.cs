@@ -1,22 +1,24 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Http;
 
 namespace NetCoreBFF.Services
 {
-    public interface IOldService
+    public interface IOldService2
     {
         Task<HttpResponseMessage> CallOldServiceAsync(object requestObj, string endpoint);
         HttpResponseMessage CallOldService(object request, string endpoint);
     }
-    public class OldService : IOldService
+    public class OldService2 : IOldService2
     {
         private readonly IHttpClientFactory _clientFactory;
         private readonly Uri _uri;
-        public OldService(IConfiguration conf, IHttpClientFactory clientFactory)
+        public OldService2(IConfiguration conf, IHttpClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
             _uri = new Uri(conf["LegacyServiceUrl"]);
@@ -26,16 +28,14 @@ namespace NetCoreBFF.Services
         {
             var client = _clientFactory.CreateClient();
             client.BaseAddress = _uri;
-            HttpResponseMessage response = new HttpResponseMessage();
-
-            StringContent data = new StringContent(requestObj.ToString(), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = null;
+            var data = JsonConvert.SerializeObject(requestObj);
+            StringContent jsonObject = new StringContent(data, Encoding.UTF8, "application/json");
             try
             {
 
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                response = await client.PostAsync(@endpoint, data);
-                watch.Stop();
-                var elapsedMs = watch.ElapsedMilliseconds;
+                response = await client.PostAsync(@endpoint, jsonObject);
+
 
             }
             catch (Exception ex)

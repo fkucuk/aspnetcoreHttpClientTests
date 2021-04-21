@@ -20,8 +20,7 @@ namespace NetCoreBFF.Controllers
         private readonly IOldService _oldService;
         private readonly IConfiguration _configuration;
 
-        private static readonly IJsonRestDataService channel =
-            new ChannelFactory<MobileWCFService.IJsonRestDataService>(new BasicHttpBinding(), new EndpointAddress("https://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc/wcf")).CreateChannel();
+        
 
         public MobileController(IOldService oldService,ICoreService coreService, IConfiguration configuration)
         {
@@ -64,7 +63,7 @@ namespace NetCoreBFF.Controllers
                 catch
                 {
 
-                    return StatusCode((int)response.StatusCode);
+                    return StatusCode(501);
                 }
             }
 
@@ -111,13 +110,25 @@ namespace NetCoreBFF.Controllers
         [HttpPost, Route("v6/getlabelinfo")]
         public IActionResult GetWeather_v6(GetLabelInfoRequest request)
         {
+            BasicHttpBinding basicHttpBinding = new BasicHttpBinding();
+            var address = new EndpointAddress("http://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc/wcf");
+
+            //var factory = new ChannelFactory<IJsonRestDataService>(basicHttpBinding, address);
+            //var channel = factory.CreateChannel();
+            ////var channel = new ChannelFactory<MobileWCFService.IJsonRestDataService>(new BasicHttpBinding(), new EndpointAddress("http://nagras-local.lcwaikiki.com/TemaMobileServices/JsonRestDataService.svc/wcf")).CreateChannel();
+
+
+            MobileWCFService.JsonRestDataServiceClient client = new JsonRestDataServiceClient(basicHttpBinding, address);
 
             try
             {
-                var result = channel.GetLabelInfo(request);
+                var result = client.GetLabelInfoAsync(request);
                 return Ok(result);
             }
-            catch { return BadRequest(); }
+            catch(Exception e) { 
+                return BadRequest(); 
+            }
+
         }
 
 

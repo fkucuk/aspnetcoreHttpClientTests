@@ -34,6 +34,7 @@ namespace NetCoreBFF.Services
             }
             catch
             {
+                response = new HttpResponseMessage();
                 response.StatusCode = HttpStatusCode.BadGateway;
                 StringBuilder errorMesagge = new StringBuilder();
                 errorMesagge.Append("RequestURI:");

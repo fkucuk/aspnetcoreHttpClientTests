@@ -10,68 +10,34 @@ namespace NetCoreBFF.Services
     public interface IOldService
     {
         Task<HttpResponseMessage> CallOldServiceAsync(object requestObj, string endpoint);
-        HttpResponseMessage CallOldService(object request, string endpoint);
     }
     public class OldService : IOldService
     {
-        private readonly IHttpClientFactory _clientFactory;
+        
         private readonly Uri _uri;
-        public OldService(IConfiguration conf, IHttpClientFactory clientFactory)
+        private readonly HttpClient _client;
+        public OldService(HttpClient client, IConfiguration conf)
         {
-            _clientFactory = clientFactory;
+            _client = client;
             _uri = new Uri(conf["LegacyServiceUrl"]);
         }
 
         public async Task<HttpResponseMessage> CallOldServiceAsync(object requestObj, string endpoint)
         {
-            var client = _clientFactory.CreateClient();
-            client.BaseAddress = _uri;
-            HttpResponseMessage response = new HttpResponseMessage();
+            _client.BaseAddress = _uri;
+            HttpResponseMessage response = null;
 
             StringContent data = new StringContent(requestObj.ToString(), Encoding.UTF8, "application/json");
             try
             {
-
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                response = await client.PostAsync(@endpoint, data);
-                watch.Stop();
-                var elapsedMs = watch.ElapsedMilliseconds;
-
+                response = await _client.PostAsync(@endpoint, data);
             }
-            catch (Exception ex)
+            catch
             {
                 response.StatusCode = HttpStatusCode.BadGateway;
                 StringBuilder errorMesagge = new StringBuilder();
                 errorMesagge.Append("RequestURI:");
-                errorMesagge.Append(client.BaseAddress);
-                errorMesagge.Append(endpoint);
-                response.Content = new StringContent(errorMesagge.ToString());
-            }
-            return response;
-        }
-
-        public HttpResponseMessage CallOldService(object requestObj, string endpoint)
-        {
-            var client = _clientFactory.CreateClient();
-            client.BaseAddress = _uri;
-            HttpResponseMessage response = new HttpResponseMessage();
-
-            StringContent data = new StringContent(requestObj.ToString(), Encoding.UTF8, "application/json");
-            try
-            {
-
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                response = client.PostAsync(@endpoint, data).Result;
-                watch.Stop();
-                var elapsedMs = watch.ElapsedMilliseconds;
-
-            }
-            catch (Exception ex)
-            {
-                response.StatusCode = HttpStatusCode.BadGateway;
-                StringBuilder errorMesagge = new StringBuilder();
-                errorMesagge.Append("RequestURI:");
-                errorMesagge.Append(client.BaseAddress);
+                errorMesagge.Append(_client.BaseAddress);
                 errorMesagge.Append(endpoint);
                 response.Content = new StringContent(errorMesagge.ToString());
             }

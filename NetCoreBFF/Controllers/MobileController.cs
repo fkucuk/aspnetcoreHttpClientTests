@@ -30,7 +30,7 @@ namespace NetCoreBFF.Controllers
         [HttpPost, Route("getlabelinfo")]
         public async Task<IActionResult> GetWeather(object request)
         {
-            var response = await _oldService.CallOldServiceAsync(request, "weather");
+            var response = await _oldService.CallOldServiceAsync(request, "getlabelinfo");
 
             if (response.IsSuccessStatusCode)
             {
@@ -75,7 +75,7 @@ namespace NetCoreBFF.Controllers
             using var client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
             var postData = JsonConvert.SerializeObject(request);
-            var response = client.UploadString($"{_configuration["LegacyServiceUrl"]}/weather", postData);
+            var response = client.UploadString($"{_configuration["LegacyServiceUrl"]}/getlabelinfo", postData);
 
             return Ok(response);
         }

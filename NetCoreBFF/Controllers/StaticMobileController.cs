@@ -36,6 +36,7 @@ namespace NetCoreBFF.Controllers
             }
             catch (Exception ex)
             {
+                response = new HttpResponseMessage();
                 response.StatusCode = HttpStatusCode.BadGateway;
                 StringBuilder errorMesagge = new StringBuilder();
                 errorMesagge.Append("RequestURI:");
@@ -53,7 +54,7 @@ namespace NetCoreBFF.Controllers
             }
 
 
-            return StatusCode((int)response.StatusCode);
+            return StatusCode(501);
 
         }
     }

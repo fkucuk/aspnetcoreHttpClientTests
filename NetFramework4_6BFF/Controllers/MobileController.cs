@@ -14,15 +14,20 @@ namespace NetFrameworkBFF.Controllers
     public class MobileController : ApiController
     {
 
-        static HttpClient _client = new HttpClient { BaseAddress = new Uri(ConfigurationManager.AppSettings["OldServiceUrl"].ToString()) };
+        static HttpClient _client = InitializeHttpClient();
+            
+        private string oldServiceUrl = ConfigurationManager.AppSettings["OldServiceUrl"].ToString();
 
-        private readonly string oldServiceUrl;
-        public MobileController()
+        static HttpClient InitializeHttpClient()
         {
-            this.oldServiceUrl = ConfigurationManager.AppSettings["OldServiceUrl"].ToString();
-            _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Accept.Add(
+            var client = new HttpClient() { BaseAddress = new Uri(ConfigurationManager.AppSettings["OldServiceUrl"].ToString()) };
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+
+            return client;
         }
 
         [HttpPost]
@@ -98,8 +103,6 @@ namespace NetFrameworkBFF.Controllers
         {
             try
             {
-
-
                 string body = JsonConvert.SerializeObject(requestObj);
 
 
